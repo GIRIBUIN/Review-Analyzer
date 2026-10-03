@@ -9,6 +9,7 @@ six==1.17.0
 tzdata==2025.2
 setuptools
 beautifulsoup4
+openpyxl
 
 # 크롤링 & 스크래핑
 attrs==25.4.0
@@ -35,4 +36,4 @@ wsproto==1.2.0
 
 ## AI 분석
 python-dotenv==1.2.1
-google-generativeai==0.8.5
+google-genai>=2.3.0

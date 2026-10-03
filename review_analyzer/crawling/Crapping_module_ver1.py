@@ -3,7 +3,9 @@ import pandas as pd
 import traceback
 import random
 import os
-import undetected_chromedriver as uc
+from pathlib import Path
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -23,7 +25,7 @@ def setup_driver(lock=None):
     undetected_chromedriver 초기화 
     (Headless + Eager Mode + 이미지 차단 적용)
     """
-    options = uc.ChromeOptions()
+    options = webdriver.ChromeOptions()
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument("--start-maximized")
     
@@ -35,8 +37,7 @@ def setup_driver(lock=None):
     prefs = {"profile.managed_default_content_settings.images": 2}
     options.add_experimental_option("prefs", prefs)
 
-    # [속도 향상] Headless 모드 (필요시 주석 해제하여 사용)
-    # options.add_argument("--headless=new") 
+    # 쿠팡 상품평 영역이 정상 렌더링되도록 브라우저 창을 표시합니다.
     
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
@@ -46,12 +47,11 @@ def setup_driver(lock=None):
     if lock: lock.acquire()
     
     try:
-        driver = uc.Chrome(options=options, version_main=141)
+        local_driver = Path(__file__).resolve().parents[2] / ".drivers" / "chromedriver.exe"
+        service = Service(executable_path=str(local_driver)) if local_driver.exists() else Service()
+        driver = webdriver.Chrome(service=service, options=options)
     except Exception as e:
-        try:
-            driver = uc.Chrome(options=options)
-        except Exception as e2:
-            print(f"   [치명적 오류] 드라이버 로드 실패: {e2}")
+        print(f"   [치명적 오류] 드라이버 로드 실패: {e}")
     finally:
         if lock:
             time.sleep(1) 
