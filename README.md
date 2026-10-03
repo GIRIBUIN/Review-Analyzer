@@ -4,7 +4,7 @@
 
 ## 시연 영상
 
-[![딸깍 리뷰 시연 영상](https://img.youtube.com/vi/s0NdfQGYFL4/hqdefault.jpg)](https://www.youtube.com/watch?v=s0NdfQGYFL4)
+[![딸깍 리뷰 시연 영상](assets/home.png)](https://www.youtube.com/watch?v=s0NdfQGYFL4)
 
 이미지를 클릭하면 YouTube 시연 영상으로 이동합니다.
 
