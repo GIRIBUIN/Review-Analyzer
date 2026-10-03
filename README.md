@@ -68,7 +68,7 @@
 -  VS code에서 ReviewAnalyzer 폴더 열고, Terminal을 엽니다.
 ```
 # Python 가상 환경 생성(한 번만 하면 됩니다!)
-pytohn -m venv venv
+python -m venv venv
 
 # 가상 환경 활성화(터미널을 새로 열 때마다 실행하면 됩니다)
 # python 터미널을 cmd로 바꿔서 하면 됩니다.
