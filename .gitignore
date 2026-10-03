@@ -1,0 +1,6 @@
+.env
+.venv/
+.drivers/
+__pycache__/
+*.py[cod]
+review_analyzer/crawling/coupang_reviews_final_parallel.xlsx

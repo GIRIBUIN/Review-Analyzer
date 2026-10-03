@@ -727,6 +727,7 @@ function getAnalysisCard(dbResult) {
         <div class="flex flex-col w-full max-w-4xl mx-auto">
             <div class="text-center mb-6">
                 <h1 class="text-2xl font-extrabold text-gray-800">${analysisData.product_name || '제품 분석 결과'}</h1>
+                ${dbResult.demo_mode ? `<p class="mt-2 text-xs font-medium text-amber-700">식별 정보를 제거한 사전 수집 리뷰 ${dbResult.demo_review_count || ''}건을 사용하는 Demo Mode입니다.</p>` : ''}
             </div>
             ${overallAnalysisHtml}
             <div class="mt-8">

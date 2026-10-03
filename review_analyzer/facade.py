@@ -19,6 +19,8 @@ import os
 import json
 import traceback # 오류 로깅을 위해 추가
 import re # 텍스트 마이닝(데이터 전처리)
+from pathlib import Path
+from flask import current_app
 
 def analyze_reviews(link, keywords):
     """
@@ -28,19 +30,26 @@ def analyze_reviews(link, keywords):
     print(keywords)
     try:
         # --- 크롤링 ---
-        print("LOG: Starting parallel crawling...")
-        manager = Manager()
-        lock = manager.Lock()
-        tasks = [(link, rating, lock) for rating in crawl_module.TARGET_RATINGS]
+        demo_mode = current_app.config.get('DEMO_MODE', False)
+        if demo_mode:
+            demo_file = Path(__file__).parent / 'demo_data' / 'haneulbori_reviews.json'
+            print(f"LOG: Demo mode - loading anonymized reviews from {demo_file.name}")
+            with demo_file.open(encoding='utf-8') as file:
+                all_reviews = json.load(file)['reviews']
+        else:
+            print("LOG: Starting parallel crawling...")
+            manager = Manager()
+            lock = manager.Lock()
+            tasks = [(link, rating, lock) for rating in crawl_module.TARGET_RATINGS]
 
-        # 동시에 실행할 프로세스 수 결정 (CPU 코어 수와 작업 수 중 작은 값, 최대 4개로 제한)
-        num_processes = 5
+            # 쿠팡에 동시 요청이 몰리지 않도록 별점별 크롤링을 순차 처리합니다.
+            num_processes = 1
 
-        all_reviews = []
-        with Pool(processes=num_processes) as pool:
-            results_list = pool.map(crawl_module.scrape_wrapper, tasks)
-            for result in results_list:
-                all_reviews.extend(result)
+            all_reviews = []
+            with Pool(processes=num_processes) as pool:
+                results_list = pool.map(crawl_module.scrape_wrapper, tasks)
+                for result in results_list:
+                    all_reviews.extend(result)
         
         if not all_reviews:
             raise Exception("크롤링을 통해 수집된 리뷰가 없습니다.")
@@ -53,7 +62,7 @@ def analyze_reviews(link, keywords):
              
         clean_df = temp_df.dropna(subset=['내용'])
         review_string = ' '.join(clean_df['내용'].astype(str).tolist())[:15000]
-        print(review_string, len(review_string))
+        print(f"LOG: Prepared {len(review_string)} review characters for analysis.")
         # ----------- 키워드 텍스트 마이닝(키워드 포함 문장 추출) -------------
         target_keywords = keywords
         sep_sentences = re.split(r'[.?!]\s*', review_string)
@@ -69,7 +78,7 @@ def analyze_reviews(link, keywords):
                     break
         
         final_string = " ".join(extracted_sentences)
-        print(final_string, len(final_string))
+        print(f"LOG: Extracted {len(final_string)} keyword-related characters.")
         # ------------ review_string 전처리 끝 -------------
         ai_response_json_str = ai_module.analyze_reviews(keywords, final_string)
         # ai_response_json_str = ai_module.analyze_reviews(keywords, review_string)
@@ -101,6 +110,8 @@ def analyze_reviews(link, keywords):
             "url": link,
             "keywords": keywords,
             "analysis_text": final_analysis_text,
+            "demo_mode": demo_mode,
+            "demo_review_count": len(all_reviews) if demo_mode else None,
         }
         
         # [DEBUG] 최종 반환 데이터 구조 확인
