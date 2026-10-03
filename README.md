@@ -1,88 +1,118 @@
-# 딸깍 리뷰 (ReviewAnalyzer)
+# 딸깍 리뷰 (Review Analyzer)
 
-사용자가 제공하는 제품 링크와 키워드를 기반으로, 리뷰를 AI로 분석 및 요약하여 맞춤형 추천을 제공하는 웹 서비스입니다.
+사용자가 입력한 상품 링크와 관심 키워드를 바탕으로 리뷰를 분석하고, 핵심 장단점을 요약해 주는 웹 서비스입니다.
+
+## 시연 영상
+
+[![딸깍 리뷰 시연 영상](https://img.youtube.com/vi/s0NdfQGYFL4/hqdefault.jpg)](https://www.youtube.com/watch?v=s0NdfQGYFL4)
+
+이미지를 클릭하면 YouTube 시연 영상으로 이동합니다.
 
 ## 프로젝트 개요
 
-- **프로젝트 목표:** 불필요한 정보 탐색 시간을 줄이고, 사용자에게 객관적이고 핵심적인 제품 정보를 제공합니다.
-- **핵심 기능:** 키워드 기반 리뷰 분석, 지능형 DB 캐싱, AI 맞춤형 추천, 개인 라이브러리
+- **프로젝트 목표:** 리뷰 탐색 시간을 줄이고 사용자가 원하는 기준에 맞는 제품 정보를 제공합니다.
+- **핵심 기능:** 키워드 기반 리뷰 분석, Gemini 요약, 분석 결과 저장, 개인 라이브러리
 - **팀원:**
   - `최정길`: 202110542
   - `이의빈`: 202114228
   - `이유환`: 202111343
 
----
+## Demo Mode 및 제한사항
+
+쿠팡은 자동화된 브라우저 요청에 `Access Denied`를 반환할 수 있어 실시간 리뷰 수집이 항상 재현되지는 않습니다. 이는 서비스의 접근 정책과 자동화 탐지 환경에 따라 달라질 수 있습니다.
+
+재현 가능한 시연을 위해 `DEMO_MODE=true`에서는 사전에 수집하고 식별 정보를 제거한 하늘보리 리뷰 데이터를 사용합니다. Demo Mode는 **리뷰 수집 단계만 대체**하며, 키워드 추출, Gemini 분석, 결과 표시 및 DB 저장 흐름은 실제 기능과 동일하게 실행됩니다.
+
+`DEMO_MODE=false`로 변경하면 Selenium 기반 실시간 수집을 시도하지만, 쿠팡의 접근 제한으로 실패할 수 있습니다. 이 프로젝트는 해당 제한을 우회하거나 실시간 크롤링 성공을 보장하지 않습니다.
 
 ## 기술 스택
 
-- **Backend:** Python, Flask
-- **Frontend:** HTML, CSS, JavaScript
+- **Backend:** Python 3.11, Flask
+- **Frontend:** HTML, Tailwind CSS, JavaScript
 - **Database:** MySQL
-- **Infrastructure:** Docker
+- **Crawling:** Selenium, pandas
+- **AI:** Google Gemini Interactions API (`google-genai`)
 
----
+## 실행 방법
 
-## 폴더 구조 : venv는 RA 밑에서 하시길
+### 1. 가상 환경 구성
 
-```
-📦RA
-┣ 📂review_analyzer
-┃ ┣ 📂ai
-┃ ┃ ┣ 📜analyzer.py
-┃ ┃ ┣ 📜chatbot.py
-┃ ┃ ┗ 📜__init__.py
-┃ ┣ 📂crawling
-┃ ┃ ┣ 📜Crapping_module_ver1.py
-┃ ┃ ┣ 📜Recommend_Product.py
-┃ ┃ ┗ 📜__init__.py
-┃ ┣ 📂db
-┃ ┃ ┣ 📜db.py
-┃ ┃ ┣ 📜schema.sql
-┃ ┃ ┗ 📜__init__.py
-┃ ┣ 📂static
-┃ ┃ ┣ 📂css
-┃ ┃ ┗ 📂js
-┃ ┃ ┃ ┗ 📜main.js
-┃ ┣ 📂templates
-┃ ┃ ┗ 📜index.html
-┃ ┣ 📜auth.py
-┃ ┣ 📜facade.py
-┃ ┣ 📜routes.py
-┃ ┣ 📜test_routes.py
-┃ ┗ 📜__init__.py
-┣ 📜config.py
-┗ 📜run.py
+PowerShell에서 프로젝트 루트로 이동한 뒤 실행합니다.
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+$env:PYTHONUTF8="1"
+pip install -r requirements.txt
 ```
 
-## 개발 환경 설정
+### 2. 환경 변수 설정
 
-이 프로젝트는 Docker 기반으로 동작하므로, 모든 팀원은 아래 절차에 따라 환경을 설정해야 합니다.
+예시 파일을 복사한 뒤 `.env`에 실제 DB 접속 정보와 Gemini API 키를 입력합니다.
 
-1.  프로그램
-- git + sourcetree: 깃허브 유용성 관련
-- Docker Desktop: 필수 설치. 설치 후 실행한 상태에서 진행해야 합니다!
-- VS code: Code Editor
-
-2.  프로젝트 가져오기
-- 자신이 원하는 위치에 git clone 받고 진행합니다.(ReviewAnalyzer라는 폴더에 클론을 받았다고 생각하고 진행)
--  VS code에서 ReviewAnalyzer 폴더 열고, Terminal을 엽니다.
-```
-# Python 가상 환경 생성(한 번만 하면 됩니다!)
-python -m venv venv
-
-# 가상 환경 활성화(터미널을 새로 열 때마다 실행하면 됩니다)
-# python 터미널을 cmd로 바꿔서 하면 됩니다.
-.\venv\Scripts\Activate
-# 성공하면 터미널 프롬프트 앞에 (venv)가 표시됩니다.
+```powershell
+Copy-Item .env.example .env
 ```
 
-3. Docker 컨테이너 실행  
-- src 폴더 안에서 명령어를 실행해야 함(cd 명령어로 이동)
-```VS code terminal
-(venv) ReviewAnalyzer>src> docker compose up --build
-# web-1, db-1의 로그에서 오류가 없는지 확인
-# http://localhost:5000에 접속하여 화면이 나타나면 정상입니다.
+```dotenv
+SECRET_KEY=change-me
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your-password
+DB_NAME=review_analyzer_db
+GOOGLE_API_KEY=your-api-key
+DEBUG=true
+DEMO_MODE=true
 ```
 
-4.  그 외
-- 컨테이너 삭제하고 싶으면 'docker compose down' 실행하면 됩니다.
+`.env`는 Git에 포함되지 않습니다.
+
+### 3. 데이터베이스 생성
+
+MySQL 서버를 실행한 뒤 `review_analyzer/db/schema.sql`을 MySQL Workbench에서 실행하거나 다음 명령을 사용합니다.
+
+```powershell
+mysql -u root -p < review_analyzer/db/schema.sql
+```
+
+### 4. 서버 실행
+
+```powershell
+.\run_demo.bat
+```
+
+또는 활성화된 가상 환경에서 직접 실행할 수 있습니다.
+
+```powershell
+python run.py
+```
+
+브라우저에서 `http://127.0.0.1:5000`에 접속합니다.
+
+## 시연 순서
+
+1. 상품 URL을 입력합니다.
+2. 분석 키워드를 쉼표로 구분해 입력합니다. 예: `맛, 향, 가성비`
+3. Gemini가 생성한 전체 요약과 키워드별 분석을 확인합니다.
+4. 로그인 후 결과를 개인 라이브러리에 저장합니다.
+
+Demo Mode에서는 입력한 URL을 분석 결과의 식별 및 저장에 사용하고, 리뷰 본문은 포함된 하늘보리 데모 데이터를 사용합니다.
+
+## 폴더 구조
+
+```text
+Review-Analyzer/
+├─ review_analyzer/
+│  ├─ ai/              # Gemini 분석
+│  ├─ crawling/        # Selenium 수집 및 유사 상품 탐색
+│  ├─ db/              # DB 접근 및 스키마
+│  ├─ demo_data/       # 식별 정보를 제거한 시연 데이터
+│  ├─ static/          # CSS, JavaScript
+│  └─ templates/       # HTML 템플릿
+├─ .env.example
+├─ config.py
+├─ requirements.txt
+├─ run.py
+└─ run_demo.bat
+```
